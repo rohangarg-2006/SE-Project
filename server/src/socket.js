@@ -1,70 +1,15 @@
 import { loadStops } from './utils/stopsLoader.js';
-import fs from 'fs/promises';
-import path from 'path';
-import { fileURLToPath } from 'url';
 
 // Map to track active ride requests
 // Format: { requestId: { passengerId, pickupStop, destinationStop, timestamp, status } }
 export const activeRequests = new Map();
-export const rideHistory = [];
 
 // Counters for generating unique IDs
 let requestCounter = 1;
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
-const DATA_DIR = path.join(__dirname, 'data');
-const RIDE_HISTORY_FILE = path.join(DATA_DIR, 'rideHistory.json');
-
-const persistRideHistory = async () => {
-  try {
-    await fs.mkdir(DATA_DIR, { recursive: true });
-    await fs.writeFile(RIDE_HISTORY_FILE, JSON.stringify(rideHistory, null, 2), 'utf-8');
-  } catch (error) {
-    console.error('Failed to persist ride history:', error);
-  }
-};
-
-const loadRideHistory = async () => {
-  try {
-    await fs.mkdir(DATA_DIR, { recursive: true });
-    const fileContent = await fs.readFile(RIDE_HISTORY_FILE, 'utf-8');
-    const parsed = JSON.parse(fileContent);
-    if (Array.isArray(parsed)) {
-      rideHistory.splice(0, rideHistory.length, ...parsed);
-    }
-  } catch (error) {
-    if (error.code === 'ENOENT') {
-      await fs.writeFile(RIDE_HISTORY_FILE, JSON.stringify([], null, 2), 'utf-8');
-      return;
-    }
-    console.error('Failed to load ride history:', error);
-  }
-};
-
-const getRideHistoryForUser = (userType, userId) => {
-  if (!userType || !userId) {
-    return rideHistory;
-  }
-
-  if (userType === 'passenger') {
-    return rideHistory.filter((ride) => ride.passengerId === userId);
-  }
-
-  if (userType === 'driver') {
-    return rideHistory.filter((ride) => ride.driverId === userId);
-  }
-
-  return rideHistory;
-};
-
-export const getRideHistory = (userType, userId) => {
-  return getRideHistoryForUser(userType, userId);
-};
 
 export const initializeSocket = (io) => {
   // Load stops on initialization
   const stops = loadStops();
-  loadRideHistory();
 
   // Handle namespace connections
   io.on('connection', (socket) => {
@@ -75,10 +20,7 @@ export const initializeSocket = (io) => {
     // Passenger joins room
     socket.on('JOIN_PASSENGER', (data) => {
       socket.join('passengers');
-      socket.userType = 'passenger';
-      socket.userId = data?.passengerId;
       console.log(`Passenger ${socket.id} joined the passengers room`);
-      socket.emit('RIDE_HISTORY', getRideHistoryForUser('passenger', socket.userId));
     });
 
     // Passenger broadcasts ride request
@@ -108,11 +50,6 @@ export const initializeSocket = (io) => {
 
       // Store in active requests
       activeRequests.set(requestId, rideRequest);
-      rideHistory.unshift({
-        ...rideRequest,
-        createdAt: Date.now(),
-      });
-      persistRideHistory();
 
       console.log(`New ride request: ${requestId}`, rideRequest);
 
@@ -125,7 +62,6 @@ export const initializeSocket = (io) => {
         status: 'PENDING',
         message: 'Your request has been broadcasted to drivers',
       });
-      io.emit('RIDE_HISTORY_UPDATED');
     });
 
     // ==================== DRIVER EVENTS ====================
@@ -134,8 +70,6 @@ export const initializeSocket = (io) => {
     socket.on('JOIN_DRIVER', (data) => {
       socket.join('drivers');
       socket.driverId = data.driverId;
-      socket.userType = 'driver';
-      socket.userId = data.driverId;
       console.log(`Driver ${socket.driverId} (${socket.id}) joined the drivers room`);
 
       // Send driver all pending requests
@@ -143,7 +77,6 @@ export const initializeSocket = (io) => {
         (req) => req.status === 'PENDING'
       );
       socket.emit('PENDING_REQUESTS', pendingRequests);
-      socket.emit('RIDE_HISTORY', getRideHistoryForUser('driver', socket.userId));
     });
 
     // Driver accepts a ride
@@ -167,13 +100,6 @@ export const initializeSocket = (io) => {
       request.acceptedAt = Date.now();
 
       activeRequests.set(requestId, request);
-      const historyItem = rideHistory.find((ride) => ride.requestId === requestId);
-      if (historyItem) {
-        historyItem.status = request.status;
-        historyItem.driverId = driverId;
-        historyItem.acceptedAt = request.acceptedAt;
-        persistRideHistory();
-      }
 
       console.log(`Driver ${driverId} accepted request ${requestId}`);
 
@@ -193,7 +119,6 @@ export const initializeSocket = (io) => {
         status: 'ACCEPTED',
         seatsAvailable: Math.max(0, seatsAvailable - 1),
       });
-      io.emit('RIDE_HISTORY_UPDATED');
     });
 
     // Driver completes a ride
@@ -209,15 +134,6 @@ export const initializeSocket = (io) => {
       // Update request status
       request.status = 'COMPLETED';
       request.completedAt = Date.now();
-      request.completedBy = driverId;
-      activeRequests.set(requestId, request);
-      const historyItem = rideHistory.find((ride) => ride.requestId === requestId);
-      if (historyItem) {
-        historyItem.status = request.status;
-        historyItem.completedAt = request.completedAt;
-        historyItem.completedBy = driverId;
-        persistRideHistory();
-      }
 
       console.log(`Ride ${requestId} marked as completed by driver ${driverId}`);
 
@@ -231,7 +147,6 @@ export const initializeSocket = (io) => {
       setTimeout(() => {
         activeRequests.delete(requestId);
       }, 5000);
-      io.emit('RIDE_HISTORY_UPDATED');
     });
 
     // ==================== GENERAL EVENTS ====================
@@ -251,12 +166,6 @@ export const initializeSocket = (io) => {
     // Get all stops
     socket.on('GET_STOPS', () => {
       socket.emit('STOPS_LIST', stops);
-    });
-
-    socket.on('GET_RIDE_HISTORY', (data = {}) => {
-      const userType = data.userType || socket.userType;
-      const userId = data.userId || socket.userId;
-      socket.emit('RIDE_HISTORY', getRideHistoryForUser(userType, userId));
     });
 
     // Handle disconnection

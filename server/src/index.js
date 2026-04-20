@@ -3,7 +3,7 @@ import { createServer } from 'http';
 import { Server } from 'socket.io';
 import cors from 'cors';
 import dotenv from 'dotenv';
-import { initializeSocket, getActiveRequests, getRideHistory } from './socket.js';
+import { initializeSocket, getActiveRequests } from './socket.js';
 
 dotenv.config();
 
@@ -33,12 +33,6 @@ app.get('/health', (req, res) => {
 app.get('/api/requests', (req, res) => {
   const requests = getActiveRequests();
   res.json({ requests, count: requests.length });
-});
-
-app.get('/api/rides', (req, res) => {
-  const { userType, userId } = req.query;
-  const rides = getRideHistory(userType, userId);
-  res.json({ rides, count: rides.length });
 });
 
 // Basic error handling middleware
