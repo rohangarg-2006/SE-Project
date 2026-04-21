@@ -44,10 +44,6 @@ const rideSchema = new mongoose.Schema({
 
 const Ride = mongoose.model("Ride", rideSchema);
 
-// Health check
-app.get('/health', (req, res) => {
-  res.json({ status: 'Server is running', timestamp: new Date() });
-});
 
 // Get all active requests
 app.get('/api/requests', (req, res) => {
@@ -55,6 +51,12 @@ app.get('/api/requests', (req, res) => {
   res.json({ requests, count: requests.length });
 });
 
+
+// Health check
+
+app.get('/health', (req, res) => {
+  res.json({ status: 'Server is running', timestamp: new Date() });
+});
 
  app.post("/api/rides/complete", async (req, res) => {
   try {
