@@ -154,6 +154,9 @@ export const DriverView = ({ userData }) => {
                     <p className="text-gray-400 text-sm mt-2">Waiting for passengers...</p>
                   </div>
                 ) : (
+
+
+
                   <div className="space-y-4">
                     {pendingRequests.map((request) => (
                       <div
@@ -188,6 +191,7 @@ export const DriverView = ({ userData }) => {
                             {getStopLandmarks(request.destinationStopId)}
                           </p>
                         </div>
+
 
                         <button
                           onClick={() => handleAcceptRide(request)}
