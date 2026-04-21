@@ -26,13 +26,43 @@ export const DriverView = ({ userData }) => {
     setSeatsAvailable((prev) => Math.max(0, prev - 1));
   };
 
-  const handleCompleteRide = () => {
-    if (activeRide) {
+  const handleCompleteRide = async () => {
+  if (activeRide) {
+    try {
+      // 🔥 API CALL TO YOUR SERVER (MongoDB)
+      const response = await fetch("http://localhost:3001/api/rides/complete", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          requestId: activeRide.requestId,
+          passengerId: activeRide.passengerId,
+          driverId: userData.userId,
+          pickupStopId: activeRide.pickupStopId,
+          destinationStopId: activeRide.destinationStopId,
+          status: "completed",
+          completedAt: new Date(),
+        }),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.error || "Failed to save ride");
+      }
+
+      // ✅ EXISTING LOGIC (UNCHANGED)
       completeRide(activeRide.requestId, userData.userId);
       setActiveRide(null);
       setSeatsAvailable((prev) => prev + 1);
+
+    } catch (error) {
+      console.error("Error saving ride:", error);
+      alert("Error saving ride to database");
     }
-  };
+  }
+};
 
   const getStopName = (stopId) => {
     const stop = stops.find((s) => s.stopId === stopId);
