@@ -40,7 +40,7 @@ function App() {
             <PassengerView userData={userData} />
             <button
               onClick={handleLogout}
-              className="fixed top-4 right-4 bg-red-600 text-white px-4 py-2 rounded-lg text-sm hover:bg-red-700 transition-all"
+              className="fixed top-4 right-4 bg-white/90 backdrop-blur-md text-red-700 border border-red-100 px-4 py-2 rounded-full text-sm font-semibold shadow-md hover:shadow-lg hover:bg-white transition-all z-40"
             >
               Logout
             </button>
@@ -50,7 +50,7 @@ function App() {
             <DriverView userData={userData} />
             <button
               onClick={handleLogout}
-              className="fixed top-4 right-4 bg-red-600 text-white px-4 py-2 rounded-lg text-sm hover:bg-red-700 transition-all"
+              className="fixed top-4 right-4 bg-white/90 backdrop-blur-md text-red-700 border border-red-100 px-4 py-2 rounded-full text-sm font-semibold shadow-md hover:shadow-lg hover:bg-white transition-all z-40"
             >
               Logout
             </button>
