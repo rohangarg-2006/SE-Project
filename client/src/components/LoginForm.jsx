@@ -39,8 +39,8 @@ export const LoginForm = ({ userType, onLoginSuccess, onCancel }) => {
   };
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-      <div className="bg-white rounded-2xl shadow-2xl max-w-md w-full p-8 animate-fade-in">
+    <div className="fixed inset-0 bg-slate-900/55 backdrop-blur-sm flex items-center justify-center p-4 z-50">
+      <div className="bg-white/95 rounded-2xl shadow-2xl max-w-md w-full p-8 animate-fade-in border border-slate-100">
         {/* Header */}
         <div className="text-center mb-8">
           <div className="text-5xl mb-3">
@@ -67,7 +67,7 @@ export const LoginForm = ({ userType, onLoginSuccess, onCancel }) => {
                 setError('');
               }}
               placeholder="Enter your name"
-              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              className="w-full px-4 py-3 border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-cyan-500 focus:border-transparent"
             />
           </div>
 
@@ -87,7 +87,7 @@ export const LoginForm = ({ userType, onLoginSuccess, onCancel }) => {
                     setError('');
                   }}
                   placeholder="e.g., Bus-01, Van-A"
-                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  className="w-full px-4 py-3 border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-cyan-500 focus:border-transparent"
                 />
               </div>
 
@@ -102,7 +102,7 @@ export const LoginForm = ({ userType, onLoginSuccess, onCancel }) => {
                   onChange={(e) => setSeats(Math.max(1, parseInt(e.target.value)))}
                   min="1"
                   max="50"
-                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  className="w-full px-4 py-3 border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-cyan-500 focus:border-transparent"
                 />
               </div>
             </>
@@ -120,13 +120,13 @@ export const LoginForm = ({ userType, onLoginSuccess, onCancel }) => {
             <button
               type="button"
               onClick={onCancel}
-              className="flex-1 bg-gray-200 text-gray-800 font-semibold py-3 px-4 rounded-lg hover:bg-gray-300 transition-all"
+              className="flex-1 bg-slate-200 text-slate-800 font-semibold py-3 px-4 rounded-xl hover:bg-slate-300 transition-all"
             >
               Back
             </button>
             <button
               type="submit"
-              className="flex-1 bg-gradient-to-r from-blue-600 to-indigo-600 text-white font-semibold py-3 px-4 rounded-lg hover:shadow-lg transition-all"
+              className="flex-1 bg-gradient-to-r from-cyan-600 to-blue-700 text-white font-semibold py-3 px-4 rounded-xl hover:shadow-lg transition-all"
             >
               {userType === 'driver' ? 'Start Driving' : 'Request Ride'}
             </button>
